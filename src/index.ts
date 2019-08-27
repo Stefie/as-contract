@@ -13,21 +13,21 @@ fetch('./build/optimized.wasm')
     })
   })
   .then(results => {
-    const instance = results.instance;
+    const exports = results.instance.exports;
 
-    const a: number = 75;
-    const b: number = 36;
+    const a: number = exports.A.valueOf();
+    const b: number = 1313;
 
     // Call the WASM add function 
     const added = document.createElement('div')
-    added.textContent = `${a} + ${b} results in ${instance.exports.add(a,b)}`;
+    added.textContent = `${a} + ${b} + 555 results in ${exports.deploy(a,b)}`;
     document.querySelector('main')!.appendChild(added)
-    console.log(`${a} + ${b} results in ${instance.exports.add(a,b)}`)
+    console.log(`${a} + ${b} plus 555 results in ${exports.deploy(a,b)}`)
 
      // Call the WASM square function 
     const incremented = document.createElement('div')
-    incremented.textContent = `${a} squared results in ${instance.exports.square(a)}`;
+    incremented.textContent = `${a} squared results in ${exports.call(a)}`;
     document.querySelector('main')!.appendChild(incremented)
-    console.log(`${a} squared results in ${instance.exports.square(a)}`)
+    console.log(`${a} squared results in ${exports.call(a)}`)
   }).catch(console.error);
 
