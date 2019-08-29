@@ -2,29 +2,21 @@
 // 2. instantiate(..., code_hash, input_data) -> address
 // 3. call(..., address, input_data)
 
-import { get_storage, set_storage } from './library';
+import { getStorage, getInput, returnPointer, setStorage } from './library';
 
 const a = new Uint8Array(1),
       b = new Uint8Array(4);
 
-set_storage(a,b)
+// setStorage(a,b)
+// getStorage(a)
 
-// get_storage(a)
-
-// export const A : i32 = 2424
-
-// export function deploy(a : i32, b: i32): i32 {
-//   return privateFunction(a, b)
-// }
+// const COUNTER_KEY: Uint8Array = new Uint8Array(32);
 
 export function call(): void {
-  get_storage(a)
+
+  const input: Uint8Array = getInput(); /// scratch buffer filled with initial data
+
 }
 
-// const PRIVATE_CONST = 555
-
-// function privateFunction(a : i32, b: i32): i32 {
-//   return a + b + PRIVATE_CONST
-// }
-
-// const COUNTER_KEY: i32 = 1;
+// deploy a new instance of the contract
+export function deploy(): void {}

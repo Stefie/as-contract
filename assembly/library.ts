@@ -14,8 +14,13 @@ declare function ext_scratch_copy(dest_ptr: i32, offset: i32, len: i32): void;
 declare function ext_return(data_ptr: i32, data_len: i32): void;
 
 
+// export default class Key extends Uint8Array {
+//   public constructor () {
+//     super(32);
+//   }
+// }
 
-export function set_storage(key: Uint8Array, value: Uint8Array): void {
+export function setStorage(key: Uint8Array, value: Uint8Array): void {
   const pointer = value ? value.byteOffset : 0;
   const length = value ? value.length : 0;
   const valueNonNull = value ? 1 : 0;
@@ -24,7 +29,7 @@ export function set_storage(key: Uint8Array, value: Uint8Array): void {
 }
 
 
-export function get_storage(key: Uint8Array): Uint8Array | null {
+export function getStorage(key: Uint8Array): Uint8Array | null {
   const ERR_OK: u32 = 0;
   // ideal: pass pointer to where to put the value
   // need allocate buffer memory with correct size
@@ -48,7 +53,7 @@ export function get_storage(key: Uint8Array): Uint8Array | null {
   }
 }
 
-export function input(): Uint8Array {
+export function getInput(): Uint8Array {
   let value = new Uint8Array(0);
   const size = ext_input_size();
 
@@ -59,6 +64,6 @@ export function input(): Uint8Array {
   return value;
 }
 
-export function return_(data: Uint8Array): void {
+export function returnPointer(data: Uint8Array): void {
   ext_return(data.byteOffset, data.length);
 }
