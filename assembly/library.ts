@@ -4,20 +4,23 @@
 
 declare function ext_set_storage(key_ptr: i32, value_non_null: i32, value_ptr: i32, value_len: i32): void;
 declare function ext_get_storage(key_ptr: i32): i32;
-// declare function ext_input_size(): i32;
-// declare function ext_input_copy(dest_ptr: i32, offset: i32, len: i32): void;
+declare function ext_input_size(): i32;
+/// dest_ptr - 
+/// offset - typically 0, specifies the offset where we will start copying,
+/// len - typically `ext_input_size`.
+declare function ext_input_copy(dest_ptr: i32, offset: i32, len: i32): void;
 declare function ext_scratch_size(): i32;
 declare function ext_scratch_copy(dest_ptr: i32, offset: i32, len: i32): void;
-// declare function ext_return(data_ptr: i32, data_len: i32): void;
+declare function ext_return(data_ptr: i32, data_len: i32): void;
 
 
 
 export function set_storage(key: Uint8Array, value: Uint8Array): void {
-  const value_ptr = value ? value.byteOffset : 0;
-  const value_len = value ? value.length : 0;
-  const value_non_null = value ? 1 : 0;
-
-  ext_set_storage(key.byteOffset, value_non_null, value_ptr, value_len);
+  const pointer = value ? value.byteOffset : 0;
+  const length = value ? value.length : 0;
+  const valueNonNull = value ? 1 : 0;
+  
+  ext_set_storage(key.byteOffset, valueNonNull, pointer, length);
 }
 
 
@@ -45,20 +48,17 @@ export function get_storage(key: Uint8Array): Uint8Array | null {
   }
 }
 
-// export function input() -> Vec<u8> {
-//   // let size = ext_input_size();
-//   // if size == 0 {
-//   //     return Vec::new();
-//   // }
+export function input(): Uint8Array {
+  let value = new Uint8Array(0);
+  const size = ext_input_size();
 
-//   // let mut value = Vec::new();
-//   // if size > 0 {
-//   //     value.resize(size as usize, 0);
-//   //     ext_input_copy(value.as_mut_ptr() as u32, 0, size);
-//   // }
-//   // value
-// }
+  if (size > 0) {
+      value = new Uint8Array(size);
+      ext_input_copy(value.byteOffset, 0, size);
+  }
+  return value;
+}
 
-// export function return_(data: &[u8]) -> ! {
-//  // ext_return(data.as_ptr() as u32, data.len() as u32);
-// }
+export function return_(data: Uint8Array): void {
+  ext_return(data.byteOffset, data.length);
+}
