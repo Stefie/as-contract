@@ -1,4 +1,4 @@
-
+/// Copied from https://github.com/pepyakin/substrate-contracts-adder
 use alloc::vec::Vec;
 
 mod cabi {
@@ -6,6 +6,9 @@ mod cabi {
         pub fn ext_set_storage(key_ptr: u32, value_non_null: u32, value_ptr: u32, value_len: u32);
         pub fn ext_get_storage(key_ptr: u32) -> u32;
         pub fn ext_input_size() -> u32;
+        /// dest_ptr - 
+        /// offset - typically 0, specifies the offset where we will start copying,
+        /// len - typically `ext_input_size`.
         pub fn ext_input_copy(dest_ptr: u32, offset: u32, len: u32);
         pub fn ext_scratch_size() -> u32;
         pub fn ext_scratch_copy(dest_ptr: u32, offset: u32, len: u32);

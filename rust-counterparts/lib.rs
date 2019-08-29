@@ -1,3 +1,4 @@
+/// Copied from https://github.com/pepyakin/substrate-contracts-adder
 #![feature(alloc_error_handler)]
 #![feature(core_intrinsics)]
 #![feature(alloc)]
@@ -17,10 +18,16 @@ use codec::{Encode, Decode};
 
 mod ext;
 
-// Use `wee_alloc` as the global allocator.
+/// Use `wee_alloc` as the global allocator.
+/// IN AS:
+/// https://docs.assemblyscript.org/details/memory
+/// import memory vs. export memory
+/// https://docs.assemblyscript.org/details/runtime
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+/// In AS, but not needed
+/// https://webassembly.github.io/spec/core/appendix/index-instructions.html
 #[panic_handler]
 #[no_mangle]
 pub fn panic(_info: &::core::panic::PanicInfo) -> ! {
@@ -29,6 +36,8 @@ pub fn panic(_info: &::core::panic::PanicInfo) -> ! {
 	}
 }
 
+/// In AS:
+/// none not nullable
 #[alloc_error_handler]
 pub extern fn oom(_: ::core::alloc::Layout) -> ! {
 	unsafe {
@@ -36,17 +45,21 @@ pub extern fn oom(_: ::core::alloc::Layout) -> ! {
 	}
 }
 
+/// Inc = 0 0xca 0xfe 0xba 0xbe
+/// Get = 1
+/// Inc(42) -> 0x00 0x2a 0x00 0x00 0x00, because it is little endian
 #[derive(Encode, Decode)]
 enum Action {
     Inc(u32),
     Get,
 }
 
+// [0x01, 0x01, ..., 0x01]
 static COUNTER_KEY: ext::Key = ext::Key([1; 32]);
 
 #[no_mangle]
-pub extern "C" fn call() { // return 0 in call
-    let input = ext::input(); // scratch buffer filled with initial data
+pub extern "C" fn call() { /// return 0 in call
+    let input = ext::input(); /// scratch buffer filled with initial data
     let action = Action::decode(&mut &input[..]).unwrap();
 
     match action {
