@@ -1,4 +1,6 @@
-# AssemblyScript-Setup
+# WORK IN PROGRESS!
+
+## AssemblyScript-Setup
 
 An AssemblyScript starter project setup.
 
