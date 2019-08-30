@@ -1,10 +1,11 @@
 # WORK IN PROGRESS!
 
-## A basic Parity Substrate `srml-contract` Smart Contract written in AssemblyScript
+### A basic Parity Substrate `srml-contract` Smart Contract written in AssemblyScript
 
-It's following a similar approach than this PoC Rust implementation:
-https://github.com/pepyakin/substrate-contracts-adder/blob/master/src/lib.rs
-https://github.com/Robbepop/non-pdsl-example/blob/master/src/lib.rs
+It's following a similar approach as this PoC Rust implementation:
+
+- https://github.com/pepyakin/substrate-contracts-adder/blob/master/src/lib.rs
+- https://github.com/Robbepop/non-pdsl-example/blob/master/src/lib.rs
 
 It uses:
 - `yarn` as a package manager
