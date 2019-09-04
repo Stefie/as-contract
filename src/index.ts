@@ -1,4 +1,4 @@
-import { ASUtil, ImportsObject, instantiateStreaming, TypedArray } from 'assemblyscript/lib/loader'
+import { ASUtil, ImportsObject, instantiateStreaming } from 'assemblyscript/lib/loader'
 
 interface Contract extends ASUtil {
   call(): void,
@@ -13,7 +13,7 @@ interface Env extends ImportsObject {
   env?: {
     memory?: WebAssembly.Memory,
     trace?: (msg: number, numArgs?: number, ...args: any[]) => void,
-    ext_get_storage?: (key_ptr: number) => number, 
+    ext_get_storage?: (key_ptr: number) => number,
     ext_println?: (ptr: number, len: number) => void,
     ext_scratch_read?: (dest_ptr: number, offset: number, len: number) => void,
     ext_scratch_size?: () => number,
@@ -40,7 +40,7 @@ const env: Env = {
     ext_get_storage: function (key_ptr: number) {
       console.log('ext_get_storage', key_ptr )
       return key_ptr;
-    }, 
+    },
     ext_println: function (ptr: number, len: number) {
       console.log('ext_println', ptr, len )
       // let str = readString(ptr, len);
@@ -78,16 +78,19 @@ const env: Env = {
 async function main() {
   const module = await instantiateStreaming(fetch('./build/untouched.wasm'), env as Env) as Contract;
 
-  console.log(module)
-  module.call()
-  module.deploy()
+  console.log("instantiated", module);
+    
+  scratchBuf = new Uint8Array([
+      42, 0, 0, 0,
+      1, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 5, 0, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+  ]);
+  module.deploy();
 
-  const memory = module.memory;
-  // Create a Uint8Array to give us access to Wasm Memory
-  const wasmByteMemoryArray = new Uint8Array(memory.buffer);
-  // Let's read index zero from JS, to make sure Wasm wrote to
-  // wasm memory, and JS can read the "passed" value from Wasm
-  console.log(wasmByteMemoryArray[44]); // Should Log "115".
+	console.log(scratchBuf);
+  const test = module.call()
+  console.log('test', test)
 };
 
 main();
