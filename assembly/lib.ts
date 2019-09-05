@@ -1,12 +1,21 @@
 import { 
   ext_get_storage,
-  ext_println,
   ext_scratch_read,
   ext_scratch_size,
   ext_scratch_write,
   ext_set_rent_allowance, 
   ext_set_storage
-} from "./env";
+} from './env';
+
+import { console_log } from '.';
+
+export function consoleLog(data: i32): void {
+  console_log(data);
+}
+
+export function say(hello: string): string {
+  return hello + " world"
+}
 
 export function setStorage(key: Uint8Array, value: Uint8Array): void {
   const pointer = value ? value.byteOffset : 0;
@@ -53,10 +62,6 @@ export function getScratchBuffer(): Uint8Array {
 
 export function setScratchBuffer(data: Uint8Array): void {
   ext_scratch_write(data.byteOffset, data.length);
-}
-
-export function println(data: Uint8Array): void {
-  ext_println(data.byteOffset, data.length);
 }
 
 // value should be i128, not defined in AS, should use BN

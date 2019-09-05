@@ -5,7 +5,6 @@
 // in the compiled wat ans wasm files. 
 
 export declare function ext_get_storage(key_ptr: i32): i32;
-export declare function ext_println(ptr: i32, len: i32): void;
 // dest_ptr - memory pointer
 // offset - typically 0, specifies the offset where we will start copying,
 // len - typically `ext_input_size`.

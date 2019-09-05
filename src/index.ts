@@ -8,13 +8,12 @@ interface Contract extends ASUtil {
 
 interface Env extends ImportsObject {
   console?: {
-    console_log: (value: any) => void
+    console_log: (pointer: number, length: number) => void
   }
   env?: {
     memory?: WebAssembly.Memory,
     trace?: (msg: number, numArgs?: number, ...args: any[]) => void,
     ext_get_storage?: (key_ptr: number) => number,
-    ext_println?: (ptr: number, len: number) => void,
     ext_scratch_read?: (dest_ptr: number, offset: number, len: number) => void,
     ext_scratch_size?: () => number,
     ext_scratch_write?: (src_ptr: number, len: number) => void,
@@ -31,8 +30,13 @@ let scratchBuf: Uint8Array = new Uint8Array(0);
 
 const env: Env = {
   console: {
-    console_log: function (value: any) {
-      console.log('console_log', value )
+    console_log: function (pointer: number) {
+      console.log('console_log', pointer )
+      // const view = new Uint8Array(memory.buffer);
+      // // `subarray` uses the same underlying ArrayBuffer as the view
+      // const subarr = view.subarray(pointer, pointer + length);
+      // const buf = new Uint8Array(subarr);
+      // const str = (new TextDecoder()).decode(buf); // (utf-8 by default)
     }
   },
   env: {
@@ -40,11 +44,6 @@ const env: Env = {
     ext_get_storage: function (key_ptr: number) {
       console.log('ext_get_storage', key_ptr )
       return key_ptr;
-    },
-    ext_println: function (ptr: number, len: number) {
-      console.log('ext_println', ptr, len )
-      // let str = readString(ptr, len);
-      // console.log('LOGGED: ', str);
     },
     ext_scratch_read: function(dest_ptr: number, offset: number, len: number) {
       console.log(`ext_scratch_read(dest_ptr=${dest_ptr}, offset=${offset}, len="${len})`);
@@ -78,17 +77,16 @@ const env: Env = {
 async function main() {
   const module = await instantiateStreaming(fetch('./build/untouched.wasm'), env as Env) as Contract;
 
+  // console.log('   say :' , module.getString(module.say(module.newString("oi"))))
+
   console.log("instantiated", module);
     
   scratchBuf = new Uint8Array([
-      42, 0, 0, 0,
-      1, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 5, 0, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+    42, 0, 0, 0,
+    1, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 5, 0, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
   ]);
-  module.deploy();
-
-	console.log(scratchBuf);
   const test = module.call()
   console.log('test', test)
 };
