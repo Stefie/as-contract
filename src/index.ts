@@ -3,7 +3,8 @@ import { ASUtil, ImportsObject, instantiateStreaming } from 'assemblyscript/lib/
 interface Contract extends ASUtil {
   call(): void,
   deploy(): void,
-  memory: WebAssembly.Memory
+  memory: WebAssembly.Memory,
+  say(): string
 }
 
 interface Env extends ImportsObject {
@@ -47,9 +48,12 @@ const env: Env = {
     },
     ext_scratch_read: function(dest_ptr: number, offset: number, len: number) {
       console.log(`ext_scratch_read(dest_ptr=${dest_ptr}, offset=${offset}, len="${len})`);
-      let mem = new Uint8Array(memory.buffer);
+
+      scratchBuf = new Uint8Array(len)
+      var mem = new Uint8Array(memory.buffer)
       for (let i = 0; i < len; i++) {
-          mem[dest_ptr + i] = scratchBuf[i];
+        console.log('mem[dest_ptr + i]', i, mem[dest_ptr + i])
+         mem[dest_ptr + i] = scratchBuf[i];
       }
     },
     ext_scratch_size: function () {
@@ -57,13 +61,15 @@ const env: Env = {
       return scratchBuf.length;
     },
     ext_scratch_write: function (src_ptr: number, len: number) {
+      // Q: Does Scratch buffer needs to size of memory buffer?
       console.log('ext_scratch_write', src_ptr, len )
-      var mem = new Uint8Array(memory.buffer);
-      console.log('ext_scratch_write mem.values', mem.values)
-      // for (let i = 0; i < len; i++) {
-      //     scratchBuf.push(mem[ptr + i]);
-      // }
-      return scratchBuf.length;
+
+      scratchBuf = new Uint8Array(len)
+      var mem = new Uint8Array(memory.buffer)
+      for (let i = 0; i < len; i++) {
+        console.log('mem[ptr + i]', i, mem[src_ptr + i])
+        scratchBuf[i] = mem[src_ptr + i];
+      }
     },
     ext_set_rent_allowance: function (value_ptr: number, value_len: number) {
       console.log('ext_return', value_ptr, value_len)
@@ -77,6 +83,7 @@ const env: Env = {
 async function main() {
   const module = await instantiateStreaming(fetch('./build/untouched.wasm'), env as Env) as Contract;
 
+  console.log('say in UI: ', module.say());
   // console.log('   say :' , module.getString(module.say(module.newString("oi"))))
 
   console.log("instantiated", module);
