@@ -13,10 +13,6 @@ export function consoleLog(data: i32): void {
   console_log(data);
 }
 
-export function say(hello: string): string {
-  return hello + " world"
-}
-
 export function setStorage(key: Uint8Array, value: Uint8Array): void {
   const pointer = value ? value.byteOffset : 0;
   const length = value ? value.length : 0;
@@ -65,6 +61,7 @@ export function setScratchBuffer(data: Uint8Array): void {
 }
 
 // value should be i128, not defined in AS, should use BN
+// @TODO include u128 from https://github.com/MaxGraey/bignum.wasm 
 export function setRentAllowance(value: i64): void { 
   const valueBuffer = new Uint8Array(value);
   ext_set_rent_allowance(valueBuffer.byteOffset, valueBuffer.length);

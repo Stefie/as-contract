@@ -14,6 +14,10 @@ import {
 @external("console", "console_log")
 export declare function console_log(pointer: i32): void;
 
+export function say(hello: string): string {
+  return hello + " world"
+}
+
 const COUNTER_KEY: Uint8Array = new Uint8Array(32);
 
 enum Action {
@@ -22,31 +26,32 @@ enum Action {
   SelfEvict
 }
 
-function handle(input: Uint8Array): Uint8Array {
+function handle(input: Uint8Array): Uint8Array { // vec<u8>
 
   const input2: u8 = 0;
+  let counter: Uint8Array | null, value : Uint8Array = new Uint8Array(0);
   switch (input2) {
     case Action.Inc:
-    consoleLog('test')
-      // let counter = getStorage(COUNTER_KEY);
+      const by: u32 =  66;
+      const increment = new Uint8Array(by)
+      counter = getStorage(COUNTER_KEY);
+      // TODO read incrementer value from storage
+      setStorage(COUNTER_KEY, increment)
       break;
     case Action.Get:
-      // let counter = getStorage(COUNTER_KEY);
+      counter = getStorage(COUNTER_KEY);
+      // TODO retrun counter or empty vec<u8>
       break;
     case Action.SelfEvict:
-      // let counter = getStorage(COUNTER_KEY);
+      setRentAllowance(0)
       break;
   }
 
-  // const result = counter !== null ?  counter : new Uint8Array(32);
-  // return result;
-
- const dummy = new Uint8Array(32);
-  return dummy;
+  return value;
 }
 
-export function call(): Uint8Array {
-  consoleLog('test')
+export function call(): i32 {
+  consoleLog(2)
   // in ink min 4 bytes
   // input -> byte array
   // decode byte array to array/ enum Action (0,1,2,3) --> SCALE CODEC
@@ -57,10 +62,10 @@ export function call(): Uint8Array {
   // Handle the message
   const output: Uint8Array = handle(input);
   setScratchBuffer(output);
-  return input;
+  return 0;
 }
 
 // deploy a new instance of the contract
-export function deploy(): u32 {
+export function deploy(): i32 {
   return 0
 }
