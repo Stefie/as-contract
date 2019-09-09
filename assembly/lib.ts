@@ -1,3 +1,4 @@
+import { u128 } from "bignum/integer/u128";
 import { 
   ext_get_storage,
   ext_scratch_read,
@@ -9,7 +10,7 @@ import {
 
 import { console_log } from '.';
 
-export function consoleLog(data: i32): void {
+export function consoleLog(data: u32): void {
   console_log(data);
 }
 
@@ -22,12 +23,12 @@ export function setStorage(key: Uint8Array, value: Uint8Array): void {
 }
 
 export function getStorage(key: Uint8Array): Uint8Array | null {
-  const ERR_OK: i32 = 0;
+  const ERR_OK: u32 = 0;
   // ideal: pass pointer to where to put the value
   // need allocate buffer memory with correct size
 
   // request storage at key, will be written in the one and only scratch buffer
-  let result: i32 = ext_get_storage(key.byteOffset);
+  let result: u32 = ext_get_storage(key.byteOffset);
 
   // if value is found
   if (result === ERR_OK) {
@@ -62,7 +63,7 @@ export function setScratchBuffer(data: Uint8Array): void {
 
 // value should be i128, not defined in AS, should use BN
 // @TODO include u128 from https://github.com/MaxGraey/bignum.wasm 
-export function setRentAllowance(value: i64): void { 
-  const valueBuffer = new Uint8Array(value);
+export function setRentAllowance(value: u128): void {
+  const valueBuffer: Uint8Array = value.toUint8Array();
   ext_set_rent_allowance(valueBuffer.byteOffset, valueBuffer.length);
 }

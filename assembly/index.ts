@@ -1,3 +1,4 @@
+import { u128 } from "bignum/integer/u128";
 import {
   consoleLog,
   getScratchBuffer,
@@ -43,14 +44,15 @@ function handle(input: Uint8Array): Uint8Array { // vec<u8>
       // TODO retrun counter or empty vec<u8>
       break;
     case Action.SelfEvict:
-      setRentAllowance(0)
+      const allowance = u128.from<i32>(0);
+      setRentAllowance(allowance)
       break;
   }
 
   return value;
 }
 
-export function call(): i32 {
+export function call(): u32 {
   consoleLog(2)
   // in ink min 4 bytes
   // input -> byte array
@@ -66,6 +68,6 @@ export function call(): i32 {
 }
 
 // deploy a new instance of the contract
-export function deploy(): i32 {
+export function deploy(): u32 {
   return 0
 }
