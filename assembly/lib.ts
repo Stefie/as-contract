@@ -1,4 +1,4 @@
-import { u128 } from "bignum/integer/u128";
+import { u128 } from "bignum";
 import { 
   ext_get_storage,
   ext_scratch_read,

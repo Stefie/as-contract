@@ -1,4 +1,4 @@
-import { u128 } from "bignum/integer/u128";
+import { u128 } from "bignum";
 import {
   consoleLog,
   getScratchBuffer,
@@ -29,7 +29,7 @@ enum Action {
 
 function handle(input: Uint8Array): Uint8Array { // vec<u8>
 
-  const input2: u8 = 0;
+  const input2: u32 = 1;
   let counter: Uint8Array | null, value : Uint8Array = new Uint8Array(0);
   switch (input2) {
     case Action.Inc:
