@@ -3,17 +3,15 @@ import { ASUtil, ImportsObject, instantiateStreaming } from 'assemblyscript/lib/
 interface Contract extends ASUtil {
   call(): void,
   deploy(): void,
-  memory: WebAssembly.Memory,
-  say(): string
+  memory: WebAssembly.Memory
 }
 
 interface Env extends ImportsObject {
-  console?: {
-    console_log: (pointer: number, length: number) => void
-  }
-  env?: {
+  env: {
+    abort: (msg: number, file: number, line: number, column: number) => void,
     memory?: WebAssembly.Memory,
     trace?: (msg: number, numArgs?: number, ...args: any[]) => void,
+    // ext_println?: (ptr: number, len: number) => void,
     ext_get_storage?: (key_ptr: number) => number,
     ext_scratch_read?: (dest_ptr: number, offset: number, len: number) => void,
     ext_scratch_size?: () => number,
@@ -25,22 +23,15 @@ interface Env extends ImportsObject {
 
 const memory = new WebAssembly.Memory({
   initial: 2,
-  maximum: 16,
+  maximum: 16, // Current maximum in srml-contracts module
 });
 let scratchBuf: Uint8Array = new Uint8Array(0);
 
 const env: Env = {
-  console: {
-    console_log: function (pointer: number) {
-      console.log('console_log', pointer )
-      // const view = new Uint8Array(memory.buffer);
-      // // `subarray` uses the same underlying ArrayBuffer as the view
-      // const subarr = view.subarray(pointer, pointer + length);
-      // const buf = new Uint8Array(subarr);
-      // const str = (new TextDecoder()).decode(buf); // (utf-8 by default)
-    }
-  },
   env: {
+    abort(msg, file, line, column) {
+      console.error("abort called at main.ts:" + line + ":" + column);
+    },
     memory: memory,
     ext_get_storage: function (key_ptr: number) {
       console.log('ext_get_storage', key_ptr )
@@ -52,8 +43,8 @@ const env: Env = {
       scratchBuf = new Uint8Array(len)
       var mem = new Uint8Array(memory.buffer)
       for (let i = 0; i < len; i++) {
-        console.log('mem[dest_ptr + i]', i, mem[dest_ptr + i])
-         mem[dest_ptr + i] = scratchBuf[i];
+        // console.log('mem[dest_ptr + i]', i, mem[dest_ptr + i])
+        mem[dest_ptr + i] = scratchBuf[i];
       }
     },
     ext_scratch_size: function () {
@@ -61,13 +52,12 @@ const env: Env = {
       return scratchBuf.length;
     },
     ext_scratch_write: function (src_ptr: number, len: number) {
-      // Q: Does Scratch buffer needs to size of memory buffer?
       console.log('ext_scratch_write', src_ptr, len )
 
       scratchBuf = new Uint8Array(len)
       var mem = new Uint8Array(memory.buffer)
       for (let i = 0; i < len; i++) {
-        console.log('mem[ptr + i]', i, mem[src_ptr + i])
+        // console.log('mem[ptr + i]', i, mem[src_ptr + i])
         scratchBuf[i] = mem[src_ptr + i];
       }
     },
@@ -82,20 +72,17 @@ const env: Env = {
 
 async function main() {
   const module = await instantiateStreaming(fetch('./build/untouched.wasm'), env as Env) as Contract;
-
-  console.log('say in UI: ', module.say());
-  // console.log('   say :' , module.getString(module.say(module.newString("oi"))))
-
   console.log("instantiated", module);
-    
-  scratchBuf = new Uint8Array([
-    42, 0, 0, 0,
-    1, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 5, 0, 0, 0, 0, 6, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
-  ]);
-  const test = module.call()
-  console.log('test', test)
+
+  scratchBuf = new Uint8Array([ 0,136,2,0,0 ]);
+  console.log('before .call with inc(value)', scratchBuf);
+  module.call()
+  console.log('after .call with inc(value)', scratchBuf);
+
+  scratchBuf = new Uint8Array([1]);
+  console.log('before call get()', scratchBuf);
+  module.call();
+  console.log('after call get()', scratchBuf);
 };
 
 main();

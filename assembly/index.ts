@@ -1,6 +1,5 @@
 import { u128 } from "bignum";
 import {
-  consoleLog,
   getScratchBuffer,
   getStorage,
   setRentAllowance,
@@ -12,52 +11,51 @@ import {
 // 2. instantiate(..., code_hash, input_data) -> address
 // 3. call(..., address, input_data)
 
-@external("console", "console_log")
-export declare function console_log(pointer: i32): void;
+const COUNTER_KEY: Uint8Array = new Uint8Array(32); // [1,1,1,1,1,1,1,1,1 ...]
 
-export function say(hello: string): string {
-  return hello + " world"
-}
-
-const COUNTER_KEY: Uint8Array = new Uint8Array(32);
+// Inc(648) => 0088020000 
+// decimal: [0,136,2,0,0]
+// Hex: 0x00000288
 
 enum Action {
   Inc,
   Get,
   SelfEvict
 }
+// class Action with parameter value & method incBy
 
 function handle(input: Uint8Array): Uint8Array { // vec<u8>
+  const value : Uint8Array = new Uint8Array(0);
+  const counter: Uint8Array = getStorage(COUNTER_KEY);
 
-  const input2: u32 = 1;
-  let counter: Uint8Array | null, value : Uint8Array = new Uint8Array(0);
-  switch (input2) {
+  // Get action from first byte of the input U8A
+  switch (input[0]) {
     case Action.Inc:
-      const by: u32 =  66;
+      // read 4 bytes (u32) from storageBuffer with offset 1 
+      // eg. storageBuffer = [0,136,2,0,0]
+      const by: u32 = load<u32>(input.byteOffset, 1);
       const increment = new Uint8Array(by)
-      counter = getStorage(COUNTER_KEY);
-      // TODO read incrementer value from storage
       setStorage(COUNTER_KEY, increment)
       break;
     case Action.Get:
-      counter = getStorage(COUNTER_KEY);
-      // TODO retrun counter or empty vec<u8>
+      // return the counter from storage
+      // eg. storageBuffer = [1]
+      if (counter.length)
+        return counter;
+        // if counter != null return new Uint8Array with value
       break;
     case Action.SelfEvict:
       const allowance = u128.from<i32>(0);
       setRentAllowance(allowance)
       break;
   }
-
   return value;
 }
 
 export function call(): u32 {
-  consoleLog(2)
   // in ink min 4 bytes
   // input -> byte array
   // decode byte array to array/ enum Action (0,1,2,3) --> SCALE CODEC
-  // Patternmatching in Rust, Switch case in JS
 
   // scratch buffer filled with initial data
   const input: Uint8Array = getScratchBuffer();
