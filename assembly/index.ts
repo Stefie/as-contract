@@ -10,8 +10,7 @@ import {
 // 1. put_code(code: bytes) -> code_hash
 // 2. instantiate(..., code_hash, input_data) -> address
 // 3. call(..., address, input_data)
-
-const COUNTER_KEY: Uint8Array = new Uint8Array(32); // [1,1,1,1,1,1,1,1,1 ...]
+const COUNTER_KEY: Uint8Array = new Uint8Array(32); // [1,1,1,1,1,1,1,1,1 ...] in Rust impl.
 
 // Inc(648) => 0088020000 
 // decimal: [0,136,2,0,0]
