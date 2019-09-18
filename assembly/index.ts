@@ -10,7 +10,9 @@ import {
 // 1. put_code(code: bytes) -> code_hash
 // 2. instantiate(..., code_hash, input_data) -> address
 // 3. call(..., address, input_data)
-const COUNTER_KEY: Uint8Array = new Uint8Array(32); // [1,1,1,1,1,1,1,1,1 ...] in Rust impl.
+
+const COUNTER_KEY: Uint8Array = new Uint8Array(32); // [1,1,1,1,1,1,1,1,1,...] in Rust impl, here [0,0,0,0,0,0,0,.....].
+COUNTER_KEY.fill(1);
 
 // Inc(648) => 0088020000 
 // decimal: [0,136,2,0,0]
@@ -25,15 +27,19 @@ enum Action {
 
 function handle(input: Uint8Array): Uint8Array { // vec<u8>
   const value : Uint8Array = new Uint8Array(0);
-  const counter: Uint8Array = getStorage(COUNTER_KEY);
+  let counter: Uint8Array = getStorage(COUNTER_KEY);
 
   // Get action from first byte of the input U8A
   switch (input[0]) {
     case Action.Inc:
       // read 4 bytes (u32) from storageBuffer with offset 1 
       // eg. storageBuffer = [0,136,2,0,0]
+      let counterValue: u32 = counter.length ? 66 : 0;
+
       const by: u32 = load<u32>(input.byteOffset, 1);
-      const increment = new Uint8Array(by)
+      counterValue += by;
+
+      const increment = new Uint8Array(counterValue)
       setStorage(COUNTER_KEY, increment)
       break;
     case Action.Get:
@@ -58,6 +64,8 @@ export function call(): u32 {
 
   // scratch buffer filled with initial data
   const input: Uint8Array = getScratchBuffer();
+
+  // @TODO: Alternative solution: Pass size of ScratchBuffer (input.length) to handle?
   // Handle the message
   const output: Uint8Array = handle(input);
   setScratchBuffer(output);

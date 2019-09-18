@@ -30,8 +30,9 @@ const env = {
         return scratchBuf.length;
     },
     "ext_scratch_read": function(ptr, offset, len) {
-        console.log("ext_scratch_read(ptr=", ptr, ", offset=", offset, ", len=", len, ")");
+        console.log(`ext_scratch_read(${ptr}, ${offset}, ${len})`);
         var mem = new Uint8Array(memory.buffer);
+        console.log('MEMORY ext_scratch_read', mem)
         for (var i = 0; i < len; i++) {
             mem[ptr + i] = scratchBuf[i];
         }

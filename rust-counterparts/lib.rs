@@ -44,6 +44,7 @@ enum Action {
     SelfEvict,
 }
 
+// written in static memory on compile
 static COUNTER_KEY: ext::Key = ext::Key([1; 32]);
 
 fn handle(input: &[u8]) -> Vec<u8> {
