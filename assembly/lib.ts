@@ -13,12 +13,21 @@ enum Storage {
   NO_VALUE
 }
 
+// See https://stackoverflow.com/questions/15761790/convert-a-32bit-integer-into-4-bytes-of-data-in-javascript
+export function u32ToU8a (num: u32): Uint8Array {
+  const arr = new ArrayBuffer(4); // an u32 takes 4 bytes
+  const view = new DataView(arr);
+  view.setUint32(0, num, true); // byteOffset = 0; litteEndian = true
+  return Uint8Array.wrap(arr);
+}
+
+
 export function setStorage(key: Uint8Array, value: Uint8Array): void {
   const pointer = value ? value.byteOffset : 0;
   const length = value ? value.length : 0;
   const valueNonNull = value ? 1 : 0;
   
-  ext_set_storage(key.byteOffset, valueNonNull, pointer, length);
+  ext_set_storage(key.dataStart, valueNonNull, pointer, length);
 }
 
 // check for length 32 bytes 
@@ -26,8 +35,9 @@ export function getStorage(key: Uint8Array): Uint8Array {
   // request storage at key, will be written in the scratch buffer
   // If there is an entry at the given location then this function will return 0,
   // if not it will return 1 and clear the scratch buffer.
-  let result: u32 = ext_get_storage(key.byteOffset); // pointer to key 32 bytes in memory
 
+  let result: u32 = ext_get_storage(key.dataStart); // pointer to key 32 bytes in static WASM memory
+  ext_scratch_write(result, Storage.HAS_VALUE)
   let value = new Uint8Array(0);
 
   // if value is found

@@ -1,10 +1,13 @@
 import { u128 } from "bignum";
+
+
 import {
   getScratchBuffer,
   getStorage,
   setRentAllowance,
   setScratchBuffer,
-  setStorage
+  setStorage,
+  u32ToU8a
 } from './lib';
 
 // 1. put_code(code: bytes) -> code_hash
@@ -32,15 +35,17 @@ function handle(input: Uint8Array): Uint8Array { // vec<u8>
   // Get action from first byte of the input U8A
   switch (input[0]) {
     case Action.Inc:
+      const dataCounter: DataView = new DataView(counter.buffer);
+      let counterValue: u32 = dataCounter.byteLength ? dataCounter.getInt32(0, true) : 0;
       // read 4 bytes (u32) from storageBuffer with offset 1 
       // eg. storageBuffer = [0,136,2,0,0]
-      let counterValue: u32 = counter.length ? 66 : 0;
-
       const by: u32 = load<u32>(input.byteOffset, 1);
       counterValue += by;
 
-      const increment = new Uint8Array(counterValue)
-      setStorage(COUNTER_KEY, increment)
+      const newCounter: Uint8Array = u32ToU8a(counterValue);
+      
+      setStorage(COUNTER_KEY, newCounter)
+
       break;
     case Action.Get:
       // return the counter from storage
@@ -50,7 +55,7 @@ function handle(input: Uint8Array): Uint8Array { // vec<u8>
         // if counter != null return new Uint8Array with value
       break;
     case Action.SelfEvict:
-      const allowance = u128.from<i32>(0);
+      const allowance = u128.from<u32>(0);
       setRentAllowance(allowance)
       break;
   }

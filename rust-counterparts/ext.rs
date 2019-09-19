@@ -17,15 +17,6 @@ mod cabi {
 pub struct Key(pub [u8; 32]);
 
 pub fn set_storage(key: &Key, value: Option<&[u8]>) {
-    // key: &Key([1,1,1,1,1,1,1,1])
-    // t = key.0 = [1, 1, 1, 1, 1, 1, 1]
-    // t.as_ptr()
-    // 
-    // impl [u8; N] {
-    //   fn as_ptr(&self) -> *const u8 {
-    //     // returns the pointer to the &self[0] 
-    //   }
-    // }
     unsafe {
         let mut value_ptr = 0;
         let mut value_len = 0;
@@ -41,29 +32,29 @@ pub fn set_storage(key: &Key, value: Option<&[u8]>) {
     }
 }
 
- // Read the key from the contract's memory.
-      //
-      // The key is some sort of a pointer which specifies what storage's cell
-      // the contract needs to read. The key is a Uint8Array and it always has the
-      // length of 32. Under each key there can be either NULL or a value. 
-      // And a value is a Uint8Array of variable size (it can be also empty).
-      //
-      // The database starts with every key set to NULL. The contract can set every
-      // value or reset it to NULL.
-      //
-      // Every contract has access to its own private DB (storage). This database
-      // is addressed by these keys. You can query the storage with the key and 
-      // get the value that is stored by the key.
-      //
-      // So the key space for this database is finite looks like this:
-      //
-      // 0x0000000000000000000000000000000000000000000000000000000000000000 -> NULL
-      // ....
-      // 0x00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF -> [1, 2, 3]
-      // ....
-      // 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF -> []
-      //
-      // And the contract can read or write values under these keys.
+// Read the key from the contract's memory.
+//
+// The key is some sort of a pointer which specifies what storage's cell
+// the contract needs to read. The key is a Uint8Array and it always has the
+// length of 32. Under each key there can be either NULL or a value. 
+// And a value is a Uint8Array of variable size (it can be also empty).
+//
+// The database starts with every key set to NULL. The contract can set every
+// value or reset it to NULL.
+//
+// Every contract has access to its own private DB (storage). This database
+// is addressed by these keys. You can query the storage with the key and 
+// get the value that is stored by the key.
+//
+// So the key space for this database is finite looks like this:
+//
+// 0x0000000000000000000000000000000000000000000000000000000000000000 -> NULL
+// ....
+// 0x00000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF -> [1, 2, 3]
+// ....
+// 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF -> []
+//
+// And the contract can read or write values under these keys.
 
 pub fn get_storage(key: &Key) -> Option<Vec<u8>> {
     const ERR_OK: u32 = 0;

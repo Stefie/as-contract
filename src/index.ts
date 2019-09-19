@@ -22,8 +22,7 @@ interface Env extends ImportsObject {
     ext_scratch_size?: () => number,
     ext_scratch_write?: (src_ptr: number, len: number) => void,
     ext_set_rent_allowance?: (value_ptr: number, value_len: number) => void,
-    ext_set_storage?: (key_ptr: number, value_non_null: number, value_ptr: number, value_len: number) => void,
-    ext_println?: (ptr: number, len: number) => void
+    ext_set_storage?: (key_ptr: number, value_non_null: number, value_ptr: number, value_len: number) => void
   }
 }
 
@@ -32,18 +31,17 @@ function byteToHex(arrayBuffer: Uint8Array) {
   return Array.prototype.map.call(new Uint8Array(arrayBuffer), x => ('00' + x.toString(16)).slice(-2)).join('');
 }
 
+// This is our emulation of substrate storage.
+// It should be able to return the value for a specific key which is always
+// a Uint8Array with 32 elements represented as a Hex value..
+const storage: Record<string, Uint8Array | undefined> = {};
+// storage['0000000000000000000000000000000000000000000000000000000000000000'] = new Uint8Array([23,0,0,0]);
+
 const memory = new WebAssembly.Memory({
   initial: 2,
   maximum: 16, // Current maximum in srml-contracts module
 });
 let scratchBuf: Uint8Array = new Uint8Array(0);
-
-
-// This is our emulation of substrate storage.
-// It should be able to return the value for a specific key which is always
-// a Uint8Array with 32 elements represented as a Hex value..
-const storage: Record<string, string> = {};
-storage['0000000000000000000000000000000000000000000000000000000000000000'] = 'bar';
 
 const env: Env = {
   env: {
@@ -55,19 +53,17 @@ const env: Env = {
       console.log('ext_get_storage', key_ptr )    
       // create empty StorageKey of length 32 bytes
       var mem = new Uint8Array(memory.buffer);
-      let key: Uint8Array = new Uint8Array(32);
-      for (var i = 0; i < 32; i++) {
-        key[i] = mem[key_ptr + i];
-      }
-      
+      // let key: Uint8Array = new Uint8Array(32);
+      const key = Uint8Array.from(mem.slice(key_ptr, key_ptr+32));
+
       const storageKey = byteToHex(key);
-      console.log(key, storageKey, storage[storageKey]);
-      // TODO:
-      // 1. Take `key` and fetch value from the `storage`/`db`.
-      // 2. As soon as you get the value from the `db` you write it to the scratch
-      //    buffer, if any.
-      // 3. 
-      return key_ptr;
+      const value: Uint8Array | undefined = storage[storageKey];
+      console.log(key, storageKey, value);
+      // return storage['0000000000000000000000000000000000000000000000000000000000000000'] ? 0 : 1;
+      if(!value) {
+        scratchBuf = new Uint8Array(0);
+      }
+      return value ? 0 : 1;
     },
     ext_scratch_read: function(dest_ptr: number, offset: number, len: number) {
       console.log(`ext_scratch_read(${dest_ptr}, ${offset}, ${len})`);
@@ -98,10 +94,25 @@ const env: Env = {
       console.log('ext_return', value_ptr, value_len)
     },
     ext_set_storage: function (key_ptr: number, value_non_null: number, value_ptr: number, value_len: number) {
-      console.log('ext_set_storage', key_ptr, value_non_null, value_ptr, value_len)
-    },
-    ext_println: function(ptr: number, len: number) {
-      console.log("ext_println: ", ptr, len);
+      console.log('ext_set_storage', key_ptr, value_non_null, value_ptr, value_len);
+      // create empty StorageKey of length 32 bytes
+      var mem = new Uint8Array(memory.buffer);
+      // let key: Uint8Array = new Uint8Array(32);
+      const key = Uint8Array.from(mem.slice(key_ptr, key_ptr+32));
+
+      const storageKey = byteToHex(key);
+
+      console.log("write to STORAGEKEY", storageKey)
+      if(value_non_null != 0){
+
+      }
+      // const value: Uint8Array | undefined = storage[storageKey];
+      // console.log(key, storageKey, value);
+      // // return storage['0000000000000000000000000000000000000000000000000000000000000000'] ? 0 : 1;
+      // if(!value) {
+      //   scratchBuf = new Uint8Array(0);
+      // }
+      // return value ? 0 : 1;
     }
   }
 };
@@ -113,13 +124,13 @@ async function main() {
 
   scratchBuf = new Uint8Array([ 0,136,2,0,0 ]);
   console.log('before .call with Inc(value)', scratchBuf);
-  module.call()
+  module.call();
   console.log('after .call with Inc(value)', scratchBuf);
 
-  // scratchBuf = new Uint8Array([1]);
-  // console.log('before .call Get()', scratchBuf);
-  // module.call();
-  // console.log('after .call Get()', scratchBuf);
+  scratchBuf = new Uint8Array([1]);
+  console.log('before .call Get()', scratchBuf);
+  module.call();
+  console.log('after .call Get()', scratchBuf);
 
   // scratchBuf = new Uint8Array([2]);
   // console.log('before .call SelfEvict()', scratchBuf);
