@@ -23,7 +23,7 @@ export function u32ToU8a (num: u32): Uint8Array {
 
 
 export function setStorage(key: Uint8Array, value: Uint8Array): void {
-  const pointer = value ? value.byteOffset : 0;
+  const pointer = value ? value.dataStart : 0;
   const length = value ? value.length : 0;
   const valueNonNull = value ? 1 : 0;
   
@@ -36,8 +36,8 @@ export function getStorage(key: Uint8Array): Uint8Array {
   // If there is an entry at the given location then this function will return 0,
   // if not it will return 1 and clear the scratch buffer.
 
-  let result: u32 = ext_get_storage(key.dataStart); // pointer to key 32 bytes in static WASM memory
-  ext_scratch_write(result, Storage.HAS_VALUE)
+  const result: u32 = ext_get_storage(key.dataStart); // pointer to key 32 bytes in static WASM memory
+
   let value = new Uint8Array(0);
 
   // if value is found
@@ -53,7 +53,7 @@ export function getStorage(key: Uint8Array): Uint8Array {
       // create empty array (Vec in Rust)
       value = new Uint8Array(size);
       // call
-      ext_scratch_read(value.byteOffset, 0, size);
+      ext_scratch_read(value.dataStart, 0, size);
     }
   } 
   return value;
@@ -67,16 +67,16 @@ export function getScratchBuffer(): Uint8Array {
   if (size > 0) {
       value = new Uint8Array(size);
       // copy data from scratch buffer 
-      ext_scratch_read(value.byteOffset, 0, size);
+      ext_scratch_read(value.dataStart, 0, size);
   }
   return value;
 }
 
 export function setScratchBuffer(data: Uint8Array): void {
-  ext_scratch_write(data.byteOffset, data.length);
+  ext_scratch_write(data.dataStart, data.length);
 }
 
 export function setRentAllowance(value: u128): void {
   const valueBuffer: Uint8Array = value.toUint8Array();
-  ext_set_rent_allowance(valueBuffer.byteOffset, valueBuffer.length);
+  ext_set_rent_allowance(valueBuffer.dataStart, valueBuffer.length);
 }
