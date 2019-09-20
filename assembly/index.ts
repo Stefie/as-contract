@@ -14,6 +14,8 @@ import {
 // 2. instantiate(..., code_hash, input_data) -> address
 // 3. call(..., address, input_data)
 
+export declare function log_value(val: i32): void;
+
 const COUNTER_KEY: Uint8Array = new Uint8Array(32); // [1,1,1,1,1,1,1,1,1,...] in Rust impl, here [0,0,0,0,0,0,0,.....].
 COUNTER_KEY.fill(1);
 
@@ -37,12 +39,16 @@ function handle(input: Uint8Array): Uint8Array { // vec<u8>
     case Action.Inc:
       const dataCounter: DataView = new DataView(counter.buffer);
       let counterValue: u32 = dataCounter.byteLength ? dataCounter.getInt32(0, true) : 0;
+      log_value(counterValue);
       // read 4 bytes (u32) from storageBuffer with offset 1 
       // eg. storageBuffer = [0,136,2,0,0]
-      const by: u32 = load<u32>(input.byteOffset, 1);
-      counterValue += by;
 
-      const newCounter: Uint8Array = u32ToU8a(counterValue);
+      const by: u32 = load<u32>(input.dataStart, 1);
+      log_value(by);
+      // const newCounter = counterValue + by;
+
+      const newCounter: Uint8Array = u32ToU8a(counterValue + by);
+      // const newCounter: Uint8Array = new Uint8Array(8);
       
       setStorage(COUNTER_KEY, newCounter)
 

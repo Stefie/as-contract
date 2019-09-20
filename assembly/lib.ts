@@ -1,6 +1,7 @@
 import { u128 } from "bignum";
 import {
   ext_get_storage,
+  ext_println,
   ext_scratch_read,
   ext_scratch_size,
   ext_scratch_write,
