@@ -12,11 +12,13 @@ interface Contract extends ASUtil {
 }
 
 interface Env extends ImportsObject {
+  index: {
+    log_value: (val: number) => void
+  },
   env: {
     abort: (msg: number, file: number, line: number, column: number) => void,
     memory?: WebAssembly.Memory,
     trace?: (msg: number, numArgs?: number, ...args: any[]) => void,
-    // ext_println?: (ptr: number, len: number) => void,
     ext_get_storage?: (key_ptr: number) => number,
     ext_scratch_read?: (dest_ptr: number, offset: number, len: number) => void,
     ext_scratch_size?: () => number,
@@ -28,7 +30,7 @@ interface Env extends ImportsObject {
 
 // Helper function to convert u8a Keys to Hex so we can use them as storage keys
 function byteToHex(arrayBuffer: Uint8Array) {
-  return Array.prototype.map.call(new Uint8Array(arrayBuffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+  return Array.prototype.map.call(new Uint8Array(arrayBuffer), (x: number) => ('00' + x.toString(16)).slice(-2)).join('');
 }
 
 // This is our emulation of substrate storage.
@@ -44,6 +46,11 @@ const memory = new WebAssembly.Memory({
 let scratchBuf: Uint8Array = new Uint8Array(0);
 
 const env: Env = {
+  index: {
+    log_value: function (val: number) {
+      console.log('CONSOLE.LOG VALUE', val)
+    }
+  },
   env: {
     abort(msg, file, line, column) {
       console.error(`abort called in ${file}:${line}:${column}: ${msg}`);
@@ -57,12 +64,10 @@ const env: Env = {
       const key = Uint8Array.from(mem.slice(key_ptr, key_ptr+32));
 
       const storageKey = byteToHex(key);
-      const value: Uint8Array | undefined = storage[storageKey];
+      const value: Uint8Array = storage[storageKey] || new Uint8Array(0);
+      scratchBuf = value;
       console.log(scratchBuf, storageKey, value);
 
-      if(!value) {
-        scratchBuf = new Uint8Array(0);
-      }
       return value ? 0 : 1;
     },
     ext_scratch_read: function(dest_ptr: number, offset: number, len: number) {
@@ -90,7 +95,7 @@ const env: Env = {
     ext_set_storage: function (key_ptr: number, value_non_null: number, value_ptr: number, value_len: number) {
       console.log('ext_set_storage', 'key_ptr', key_ptr, 'value_non_null', value_non_null, 'value_ptr', value_ptr, 'value_len', value_len);
       // create empty StorageKey of length 32 bytes
-      var mem = new Uint8Array(memory.buffer);
+      const mem = new Uint8Array(memory.buffer);
       // let key: Uint8Array = new Uint8Array(32);
       const key = Uint8Array.from(mem.slice(key_ptr, key_ptr+32));
       const storageKey = byteToHex(key);
@@ -98,7 +103,7 @@ const env: Env = {
       const value = value_non_null != 0
         ? Uint8Array.from(mem.slice(value_ptr, value_ptr+value_len))
         : new Uint8Array(0);
-
+      console.log('storageKey', value)
       storage[storageKey] = value;
     }
   }
@@ -113,8 +118,17 @@ async function main() {
   console.log('before .call with Inc(value)', scratchBuf);
   module.call();
   console.log('after .call with Inc(value)', scratchBuf);
-  scratchBuf = new Uint8Array([ 0,13,0,0,0 ]);
+
+  scratchBuf = new Uint8Array([1]);
+  console.log('before .call Get()', scratchBuf);
   module.call();
+  console.log('after .call Get()', scratchBuf);
+
+
+  scratchBuf = new Uint8Array([ 0,13,0,0,0 ]);
+  console.log('before .call with Inc(value)', scratchBuf);
+  module.call();
+  console.log('after .call with Inc(value)', scratchBuf);
 
   // scratchBuf = new Uint8Array([1]);
   // console.log('before .call Get()', scratchBuf);

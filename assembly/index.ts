@@ -32,33 +32,27 @@ enum Action {
 
 function handle(input: Uint8Array): Uint8Array { // vec<u8>
   const value : Uint8Array = new Uint8Array(0);
-  let counter: Uint8Array = getStorage(COUNTER_KEY);
+  const counter: Uint8Array = getStorage(COUNTER_KEY);
+  const dataCounter: DataView = new DataView(counter.buffer);
+  const counterValue: u32 = dataCounter.byteLength ? dataCounter.getUint32(0, true) : 0;
+  log_value(counterValue);
 
   // Get action from first byte of the input U8A
   switch (input[0]) {
     case Action.Inc:
-      const dataCounter: DataView = new DataView(counter.buffer);
-      let counterValue: u32 = dataCounter.byteLength ? dataCounter.getInt32(0, true) : 0;
-      log_value(counterValue);
       // read 4 bytes (u32) from storageBuffer with offset 1 
       // eg. storageBuffer = [0,136,2,0,0]
-
       const by: u32 = load<u32>(input.dataStart, 1);
       log_value(by);
-      // const newCounter = counterValue + by;
-
       const newCounter: Uint8Array = u32ToU8a(counterValue + by);
       // const newCounter: Uint8Array = new Uint8Array(8);
-      
       setStorage(COUNTER_KEY, newCounter)
 
       break;
     case Action.Get:
       // return the counter from storage
-      // eg. storageBuffer = [1]
       if (counter.length)
         return counter;
-        // if counter != null return new Uint8Array with value
       break;
     case Action.SelfEvict:
       const allowance = u128.from<u32>(0);
