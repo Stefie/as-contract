@@ -16,7 +16,6 @@ interface Env extends ImportsObject {
     log_value: (val: number) => void
   },
   env: {
-    abort: (msg: number, file: number, line: number, column: number) => void,
     memory?: WebAssembly.Memory,
     trace?: (msg: number, numArgs?: number, ...args: any[]) => void,
     ext_get_storage?: (key_ptr: number) => number,
@@ -52,9 +51,6 @@ const env: Env = {
     }
   },
   env: {
-    abort(msg, file, line, column) {
-      console.error(`abort called in ${file}:${line}:${column}: ${msg}`);
-    },
     memory: memory,
     ext_get_storage: function (key_ptr: number) { // Value is written in static memory
       console.log('ext_get_storage', 'key_ptr', key_ptr )    
@@ -66,7 +62,7 @@ const env: Env = {
       const storageKey = byteToHex(key);
       const value: Uint8Array = storage[storageKey] || new Uint8Array(0);
       scratchBuf = value;
-      console.log(scratchBuf, storageKey, value);
+      console.log(storageKey, value);
 
       return value ? 0 : 1;
     },
