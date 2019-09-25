@@ -53,7 +53,7 @@ const env: Env = {
   env: {
     memory: memory,
     ext_get_storage: function (key_ptr: number) { // Value is written in static memory
-      console.log('ext_get_storage', 'key_ptr', key_ptr )    
+      // console.log('ext_get_storage', 'key_ptr', key_ptr )    
       // create empty StorageKey of length 32 bytes
       const mem = new Uint8Array(memory.buffer);
       // let key: Uint8Array = new Uint8Array(32);
@@ -61,13 +61,13 @@ const env: Env = {
 
       const storageKey = byteToHex(key);
       const value: Uint8Array = storage[storageKey] || new Uint8Array(0);
+      // console.log(scratchBuf, storageKey, value);
+      // If there's a value in storage, write it to the scratch buffer, if not, empty the scratch buffer
       scratchBuf = value;
-      console.log(storageKey, value);
-
       return value ? 0 : 1;
     },
     ext_scratch_read: function(dest_ptr: number, offset: number, len: number) {
-      console.log('ext_scratch_read', 'dest_ptr', dest_ptr, 'offset', offset, 'len', len);
+      // console.log('ext_scratch_read', 'dest_ptr', dest_ptr, 'offset', offset, 'len', len);
 
       const mem = new Uint8Array(memory.buffer)
       
@@ -76,30 +76,28 @@ const env: Env = {
       }
     },
     ext_scratch_size: function () {
-      console.log('ext_scratch_size', scratchBuf.length )
+      // console.log('ext_scratch_size', scratchBuf.length )
       return scratchBuf.length;
     },
     ext_scratch_write: function (src_ptr: number, len: number) {
-      console.log('ext_scratch_write', 'src_ptr', src_ptr, 'len', len )
+      // console.log('ext_scratch_write', 'src_ptr', src_ptr, 'len', len )
       const mem = new Uint8Array(memory.buffer);
       scratchBuf = Uint8Array.from(mem.slice(src_ptr, src_ptr+len));
-      console.log('SCRATCHBUFFER', scratchBuf)
     },
     ext_set_rent_allowance: function (value_ptr: number, value_len: number) {
-      console.log('ext_set_rent_allowance', 'value_ptr', value_ptr, 'value_len', value_len)
+      // console.log('ext_set_rent_allowance', 'value_ptr', value_ptr, 'value_len', value_len)
     },
     ext_set_storage: function (key_ptr: number, value_non_null: number, value_ptr: number, value_len: number) {
-      console.log('ext_set_storage', 'key_ptr', key_ptr, 'value_non_null', value_non_null, 'value_ptr', value_ptr, 'value_len', value_len);
-      // create empty StorageKey of length 32 bytes
+      // console.log('ext_set_storage', 'key_ptr', key_ptr, 'value_non_null', value_non_null, 'value_ptr', value_ptr, 'value_len', value_len);
+
       const mem = new Uint8Array(memory.buffer);
-      // let key: Uint8Array = new Uint8Array(32);
       const key = Uint8Array.from(mem.slice(key_ptr, key_ptr+32));
       const storageKey = byteToHex(key);
 
       const value = value_non_null != 0
         ? Uint8Array.from(mem.slice(value_ptr, value_ptr+value_len))
         : new Uint8Array(0);
-      console.log('storageKey', value)
+
       storage[storageKey] = value;
     }
   }
@@ -111,30 +109,17 @@ async function main() {
   console.log("instantiated", module);
 
   scratchBuf = new Uint8Array([ 0,136,2,0,0 ]);
-  console.log('before .call with Inc(value)', scratchBuf);
+  console.log(`CALL with Inc(${scratchBuf})`);
   module.call();
-  console.log('after .call with Inc(value)', scratchBuf);
 
   scratchBuf = new Uint8Array([1]);
-  console.log('before .call Get()', scratchBuf);
+  console.log(`CALL with Get(${scratchBuf})`);
   module.call();
-  console.log('after .call Get()', scratchBuf);
-
+  console.log('AFTER .call Get(). Why is scratchBuf not getting cleared??', scratchBuf);
 
   scratchBuf = new Uint8Array([ 0,13,0,0,0 ]);
-  console.log('before .call with Inc(value)', scratchBuf);
+  console.log(`CALL with Inc(${scratchBuf})`);
   module.call();
-  console.log('after .call with Inc(value)', scratchBuf);
-
-  // scratchBuf = new Uint8Array([1]);
-  // console.log('before .call Get()', scratchBuf);
-  // module.call();
-  // console.log('after .call Get()', scratchBuf);
-
-  // scratchBuf = new Uint8Array([2]);
-  // console.log('before .call SelfEvict()', scratchBuf);
-  // module.call();
-  // console.log('after .call SelfEvict()', scratchBuf);
 };
 
 main();
