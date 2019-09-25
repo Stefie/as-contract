@@ -35,28 +35,26 @@ function handle(input: Uint8Array): Uint8Array { // vec<u8>
   const counter: Uint8Array = getStorage(COUNTER_KEY);
   const dataCounter: DataView = new DataView(counter.buffer);
   const counterValue: u32 = dataCounter.byteLength ? dataCounter.getUint32(0, true) : 0;
-  log_value(counterValue);
 
   // Get action from first byte of the input U8A
   switch (input[0]) {
     case Action.Inc:
       // read 4 bytes (u32) from storageBuffer with offset 1 
-      // eg. storageBuffer = [0,136,2,0,0]
       const by: u32 = load<u32>(input.dataStart, 1);
-      log_value(by);
       const newCounter: Uint8Array = u32ToU8a(counterValue + by);
-      // const newCounter: Uint8Array = new Uint8Array(8);
       setStorage(COUNTER_KEY, newCounter)
-
+      log_value(counterValue + by)
       break;
     case Action.Get:
       // return the counter from storage
       if (counter.length)
+        log_value(counterValue)
         return counter;
       break;
     case Action.SelfEvict:
       const allowance = u128.from<u32>(0);
       setRentAllowance(allowance)
+      log_value(counterValue)
       break;
   }
   return value;
@@ -70,8 +68,7 @@ export function call(): u32 {
   // scratch buffer filled with initial data
   const input: Uint8Array = getScratchBuffer();
 
-  // @TODO: Alternative solution: Pass size of ScratchBuffer (input.length) to handle?
-  // Handle the message
+  // @TODO: What'S the logic behind resetting scratchBuffer in handle()? Not happening in Get()
   const output: Uint8Array = handle(input);
   setScratchBuffer(output);
   return 0;
