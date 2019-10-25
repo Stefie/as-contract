@@ -9,20 +9,16 @@ import {
   u32ToU8a
 } from './lib';
 
-const COUNTER_KEY: Uint8Array = new Uint8Array(32); // [1,1,1,1,1,1,1,1,1,...] in Rust impl, here [0,0,0,0,0,0,0,.....].
+const COUNTER_KEY: Uint8Array = new Uint8Array(32);
 COUNTER_KEY.fill(1);
-
-// Inc(648) => 0088020000 
-// decimal: [0,136,2,0,0]
-// Hex: 0x00000288
 
 enum Action {
   Inc,
   Get,
   SelfEvict
 }
-// class Action with parameter value & method incBy
 
+// class Action with parameter value & method incBy
 function handle(input: Uint8Array): Uint8Array { // vec<u8>
   const value : Uint8Array = new Uint8Array(0);
   const counter: Uint8Array = getStorage(COUNTER_KEY);
@@ -51,15 +47,10 @@ function handle(input: Uint8Array): Uint8Array { // vec<u8>
 }
 
 export function call(): u32 {
-  // in ink min 4 bytes
-  // input -> byte array
-  // decode byte array to array/ enum Action (0,1,2,3) --> SCALE CODEC
-
   // scratch buffer filled with initial data
   const input: Uint8Array = getScratchBuffer();
-
-  // @TODO: What'S the logic behind resetting scratchBuffer in handle()? Not happening in Get()
   const output: Uint8Array = handle(input);
+
   setScratchBuffer(output);
   return 0;
 }

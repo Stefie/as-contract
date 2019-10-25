@@ -44,10 +44,6 @@ export function getStorage(key: Uint8Array): Uint8Array {
   if (result === Storage.HAS_VALUE) {
     // // getting size of scratch buffer to allocate the buffer of corresponding size to fit the contents of the scratch buffer
     const size: u32 = ext_scratch_size(); 
-    // @TODO Q: Why are we not passing the size to the getStorage function?
-    // It's living outside the memory and there'S no way to be sure that it
-    // hasn't been overwritten by a new contract call already?
-
     // if value is not null or not an empty array
     if (size >  0) {
       // create empty array (Vec in Rust)
