@@ -105,7 +105,7 @@ const env: Env = {
 
 async function main() {
   // rust-counterparts/incrementer.wasm build/untouched.wasm
-  const module = await instantiateStreaming(fetch('./build/untouched.wasm'), env as Env) as Contract;
+  const module = await instantiateStreaming(fetch('./build/incrementer-pruned.wasm'), env as Env) as Contract;
   console.log("instantiated", module);
 
   scratchBuf = new Uint8Array([ 0,136,2,0,0 ]);

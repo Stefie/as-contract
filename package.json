@@ -1,16 +1,15 @@
 {
   "name": "ts-contract",
   "version": "0.0.1",
-  "description": "First attempt of a substrate Smart Contract written in AssemblyScript",
+  "description": "A simple Substrate Smart Contract written in AssemblyScript",
   "author": "Stefanie Doll",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "Apache-2.0",
   "scripts": {
-    "build:untouched": "asc assembly/index.ts -b build/untouched.wasm -t build/untouched.wat --importMemory --sourceMap --validate --debug",
-    "build:optimized": "asc assembly/index.ts -b build/optimized.wasm -t build/optimized.wat --importMemory --validate --optimize",
+    "build:optimized": "asc assembly/index.ts -b build/incrementer.wasm -t build/incrementer.wat --importMemory --noAssert --use abort= --validate --optimize",
     "build:tsd": "asc assembly/index.ts -d build/index.d.ts",
-    "build": "yarn run build:untouched && yarn run build:optimized && yarn run build:tsd",
+    "build": "yarn build:optimized && yarn run build:tsd",
     "start": "yarn run build && webpack-dev-server --watch"
   },
   "dependencies": {
