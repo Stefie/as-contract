@@ -8,9 +8,9 @@ import {
   ext_set_storage
 } from './env';
 
-enum Storage {
-  HAS_VALUE,
-  NO_VALUE
+export enum StorageResult {
+  Value,
+  None
 }
 
 export function toBytes<T>(num: T, le = true): Uint8Array {
@@ -27,7 +27,7 @@ export function toBytes<T>(num: T, le = true): Uint8Array {
 export function setStorage(key: Uint8Array, value: Uint8Array): void {
   const pointer = value ? value.dataStart : 0;
   const length = value ? value.length : 0;
-  const valueNonNull = value ? 1 : 0;
+  const valueNonNull = i32(value != 0);
 
   ext_set_storage(key.dataStart, valueNonNull, pointer, length);
 }
@@ -43,11 +43,11 @@ export function getStorage(key: Uint8Array): Uint8Array {
   let value = new Uint8Array(0);
 
   // if value is found
-  if (result === Storage.HAS_VALUE) {
+  if (result === StorageResult.Value) {
     // // getting size of scratch buffer to allocate the buffer of corresponding size to fit the contents of the scratch buffer
     const size: u32 = ext_scratch_size();
     // if value is not null or not an empty array
-    if (size >  0) {
+    if (size > 0) {
       // create empty array (Vec in Rust)
       value = new Uint8Array(size);
       // call
@@ -75,6 +75,6 @@ export function setScratchBuffer(data: Uint8Array): void {
 }
 
 export function setRentAllowance(value: u128): void {
-  const valueBuffer: Uint8Array = value.toUint8Array();
+  const valueBuffer = value.toUint8Array();
   ext_set_rent_allowance(valueBuffer.dataStart, valueBuffer.length);
 }
