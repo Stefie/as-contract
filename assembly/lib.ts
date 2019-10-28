@@ -14,13 +14,14 @@ enum Storage {
 }
 
 export function toBytes<T>(num: T, le = true): Uint8Array {
+  const arr = new Uint8Array(sizeof<T>());
   // accept only integers and booleans
   if (isInteger<T>()) {
-    const arr = new Uint8Array(sizeof<T>());
     store<T>(arr.dataStart, le ? num : bswap(num));
     return arr;
   }
   assert(false);
+  return arr;
 }
 
 
