@@ -6,11 +6,10 @@ import {
   setRentAllowance,
   setScratchBuffer,
   setStorage,
-  u32ToU8a
+  toBytes
 } from './lib';
 
-const COUNTER_KEY: Uint8Array = new Uint8Array(32);
-COUNTER_KEY.fill(1);
+const COUNTER_KEY = (new Uint8Array(32)).fill(1);
 
 enum Action {
   Inc,
@@ -28,9 +27,9 @@ function handle(input: Uint8Array): Uint8Array { // vec<u8>
   // Get action from first byte of the input U8A
   switch (input[0]) {
     case Action.Inc:
-      // read 4 bytes (u32) from storageBuffer with offset 1 
+      // read 4 bytes (u32) from storageBuffer with offset 1
       const by: u32 = load<u32>(input.dataStart, 1);
-      const newCounter: Uint8Array = u32ToU8a(counterValue + by);
+      const newCounter = toBytes(counterValue + by);
       setStorage(COUNTER_KEY, newCounter)
       break;
     case Action.Get:
