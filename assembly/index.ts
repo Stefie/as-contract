@@ -6,11 +6,10 @@ import {
   setRentAllowance,
   setScratchBuffer,
   setStorage,
-  u32ToU8a
+  toBytes
 } from './lib';
 
-const COUNTER_KEY: Uint8Array = new Uint8Array(32);
-COUNTER_KEY.fill(1);
+const COUNTER_KEY = (new Uint8Array(32)).fill(1);
 
 enum Action {
   Inc,
@@ -20,18 +19,18 @@ enum Action {
 
 // class Action with parameter value & method incBy
 function handle(input: Uint8Array): Uint8Array { // vec<u8>
-  const value : Uint8Array = new Uint8Array(0);
+  const value = new Uint8Array(0);
   const counter: Uint8Array = getStorage(COUNTER_KEY);
-  const dataCounter: DataView = new DataView(counter.buffer);
+  const dataCounter = new DataView(counter.buffer);
   const counterValue: u32 = dataCounter.byteLength ? dataCounter.getUint32(0, true) : 0;
 
   // Get action from first byte of the input U8A
   switch (input[0]) {
     case Action.Inc:
-      // read 4 bytes (u32) from storageBuffer with offset 1 
-      const by: u32 = load<u32>(input.dataStart, 1);
-      const newCounter: Uint8Array = u32ToU8a(counterValue + by);
-      setStorage(COUNTER_KEY, newCounter)
+      // read 4 bytes (u32) from storageBuffer with offset 1
+      const by = load<u32>(input.dataStart, 1);
+      const newCounter = toBytes(counterValue + by);
+      setStorage(COUNTER_KEY, newCounter);
       break;
     case Action.Get:
       // return the counter from storage
@@ -40,7 +39,7 @@ function handle(input: Uint8Array): Uint8Array { // vec<u8>
       break;
     case Action.SelfEvict:
       const allowance = u128.from<u32>(0);
-      setRentAllowance(allowance)
+      setRentAllowance(allowance);
       break;
   }
   return value;
@@ -57,5 +56,5 @@ export function call(): u32 {
 
 // deploy a new instance of the contract
 export function deploy(): u32 {
-  return 0
+  return 0;
 }
